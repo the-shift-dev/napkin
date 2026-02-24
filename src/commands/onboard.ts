@@ -1,40 +1,49 @@
 import { type OutputOptions, output, success } from "../utils/output.js";
 
-const INSTRUCTIONS = `# obsidian-cli
+const INSTRUCTIONS = `# napkin
 
-Local-first CLI for Obsidian vaults. No Obsidian app required.
+🧻 Obsidian-compatible CLI for agents. Operates directly on markdown files — no Obsidian app required.
 
 ## Quick Reference
 
 \`\`\`bash
-# Vault info
-obsidian-cli vault --json
+# Vault
+napkin vault --json
 
 # Files
-obsidian-cli files --ext md --json
-obsidian-cli read <file> --json
-obsidian-cli create --name "Note" --content "Hello"
-obsidian-cli append --file "Note" --content "More text"
-obsidian-cli search --query "meeting" --json
-obsidian-cli search:context --query "TODO" --json
+napkin file list --json
+napkin read <file> --json
+napkin create --name "Note" --content "Hello"
+napkin append --file "Note" --content "More text"
+napkin search "meeting" --json
+napkin search "TODO" --context --json
 
 # Daily notes
-obsidian-cli daily:read --json
-obsidian-cli daily:append --content "- [ ] New task"
+napkin daily read --json
+napkin daily append --content "- [ ] New task"
 
 # Tasks
-obsidian-cli tasks --todo --json
-obsidian-cli tasks --daily --json
-obsidian-cli task --file "note" --line 3 --toggle
+napkin task list --todo --json
+napkin task list --daily --json
+napkin task show --file "note" --line 3 --toggle
 
 # Metadata
-obsidian-cli tags --counts --json
-obsidian-cli properties --file "note" --json
-obsidian-cli property:set --file "note" --name status --value done
-obsidian-cli backlinks --file "note" --json
-obsidian-cli outline --file "note" --json
+napkin tag list --counts --json
+napkin property list --file "note" --json
+napkin property set --file "note" --name status --value done
+napkin link back --file "note" --json
+napkin outline --file "note" --json
 
-# All commands support --json, --quiet, --vault <path>
+# Bases (database views)
+napkin base query --file "projects" --json
+napkin base query --file "projects" --view "Active" --format csv
+
+# Canvas
+napkin canvas list --json
+napkin canvas read --file "Board" --json
+napkin canvas add-node --file "Board" --type text --text "# Hello"
+
+# All commands support --json, --quiet, --vault <path>, --copy
 \`\`\`
 `;
 

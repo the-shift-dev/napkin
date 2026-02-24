@@ -7,7 +7,7 @@ description: Read, create, search, and manage notes in Obsidian vaults using the
 
 CLI for Obsidian vaults. Operates directly on markdown files — no Obsidian app, no Electron, no Catalyst license.
 
-Install: `npm install -g napkin`
+Install: `npm install -g napkin-ai`
 
 ## Syntax
 
@@ -40,18 +40,18 @@ napkin vault                                # Vault info (name, path, files, fol
 napkin version                              # CLI version
 ```
 
-### Files & folders
+### Files & folders — `napkin file`
 
 ```bash
-napkin file <name>                          # File info (path, size, dates)
-napkin files                                # List all files
-napkin files --ext md                       # Filter by extension
-napkin files --folder Projects              # Filter by folder
-napkin files --total                        # Count files
-napkin folder <path>                        # Folder info (files, folders, size)
-napkin folder <path> --info files           # Just the file count
-napkin folders                              # List all folders
-napkin folders --total                      # Count folders
+napkin file info <name>                     # File info (path, size, dates)
+napkin file list                            # List all files
+napkin file list --ext md                   # Filter by extension
+napkin file list --folder Projects          # Filter by folder
+napkin file list --total                    # Count files
+napkin file folder <path>                   # Folder info (files, folders, size)
+napkin file folder <path> --info files      # Just the file count
+napkin file folders                         # List all folders
+napkin file folders --total                 # Count folders
 ```
 
 ### Read & write
@@ -68,16 +68,16 @@ napkin delete --file "Note"                 # Move to .trash
 napkin delete --file "Note" --permanent     # Delete permanently
 ```
 
-### Daily notes
+### Daily notes — `napkin daily`
 
 Reads config from `.obsidian/daily-notes.json` (folder, format, template).
 
 ```bash
-napkin daily                                # Create today's daily note (from template if configured)
-napkin daily:path                           # Print daily note path
-napkin daily:read                           # Print daily note contents
-napkin daily:append --content "- [ ] Buy groceries"
-napkin daily:prepend --content "## Morning"
+napkin daily today                          # Create today's daily note (from template if configured)
+napkin daily path                           # Print daily note path
+napkin daily read                           # Print daily note contents
+napkin daily append --content "- [ ] Buy groceries"
+napkin daily prepend --content "## Morning"
 ```
 
 ### Search
@@ -85,58 +85,62 @@ napkin daily:prepend --content "## Morning"
 Full-text search with relevance ranking (fuzzy matching, prefix search, filename boosting).
 
 ```bash
-napkin search --query "meeting"             # Find files matching text
-napkin search --query "TODO" --path Projects  # Limit to folder
-napkin search --query "bug" --total         # Count matches
-napkin search --query "deploy" --limit 5    # Top 5 results
-napkin search:context --query "TODO"        # Grep-style file:line:text output
+napkin search "meeting"                     # Find files matching text
+napkin search --query "meeting"             # Same, using flag
+napkin search "TODO" --path Projects        # Limit to folder
+napkin search "bug" --total                 # Count matches
+napkin search "deploy" --limit 5            # Top 5 results
+napkin search "TODO" --context              # Grep-style file:line:text output
 ```
 
-### Tasks
+### Tasks — `napkin task`
 
 ```bash
-napkin tasks                                # List all tasks
-napkin tasks --todo                         # Incomplete only
-napkin tasks --done                         # Completed only
-napkin tasks --daily                        # Today's daily note tasks
-napkin tasks --file "Project A"             # Tasks in specific file
-napkin tasks --verbose                      # Group by file with line numbers
-napkin tasks --total                        # Count tasks
-napkin task --file "note" --line 3          # Show task info
-napkin task --file "note" --line 3 --toggle # Toggle ✓/○
-napkin task --file "note" --line 3 --done   # Mark done
-napkin task --ref "note.md:3" --todo        # Mark todo (file:line shorthand)
+napkin task list                            # List all tasks
+napkin task list --todo                     # Incomplete only
+napkin task list --done                     # Completed only
+napkin task list --daily                    # Today's daily note tasks
+napkin task list --file "Project A"         # Tasks in specific file
+napkin task list --verbose                  # Group by file with line numbers
+napkin task list --total                    # Count tasks
+napkin task show --file "note" --line 3     # Show task info
+napkin task show --file "note" --line 3 --toggle  # Toggle ✓/○
+napkin task show --file "note" --line 3 --done    # Mark done
+napkin task show --ref "note.md:3" --todo         # Mark todo (file:line shorthand)
 ```
 
-### Tags
+### Tags — `napkin tag`
 
 ```bash
-napkin tags                                 # List all tags
-napkin tags --counts                        # With occurrence counts
-napkin tags --sort count                    # Sort by frequency
-napkin tag --name "project"                 # Tag info (count)
-napkin tag --name "project" --verbose       # With file list
+napkin tag list                             # List all tags
+napkin tag list --counts                    # With occurrence counts
+napkin tag list --sort count                # Sort by frequency
+napkin tag info --name "project"            # Tag info (count)
+napkin tag info --name "project" --verbose  # With file list
+napkin tag aliases                          # List all aliases in vault
+napkin tag aliases --file "note"            # Aliases for a file
+napkin tag aliases --total                  # Count aliases
 ```
 
-### Properties (frontmatter)
+### Properties — `napkin property`
 
 ```bash
-napkin properties                           # List all property names in vault
-napkin properties --file "note"             # Properties for a specific file
-napkin properties --counts                  # With occurrence counts
-napkin property:read --file "note" --name title
-napkin property:set --file "note" --name status --value done
-napkin property:remove --file "note" --name status
+napkin property list                        # List all property names in vault
+napkin property list --file "note"          # Properties for a specific file
+napkin property list --counts               # With occurrence counts
+napkin property read --file "note" --name title
+napkin property set --file "note" --name status --value done
+napkin property remove --file "note" --name status
 ```
 
-### Links
+### Links — `napkin link`
 
 ```bash
-napkin backlinks --file "note"              # Files linking TO this file
-napkin links --file "note"                  # Outgoing links FROM this file
-napkin unresolved                           # Broken links (target doesn't exist)
-napkin orphans                              # Files with no incoming links
-napkin deadends                             # Files with no outgoing links
+napkin link back --file "note"              # Files linking TO this file
+napkin link out --file "note"               # Outgoing links FROM this file
+napkin link unresolved                      # Broken links (target doesn't exist)
+napkin link orphans                         # Files with no incoming links
+napkin link deadends                        # Files with no outgoing links
 ```
 
 ### Outline
@@ -147,68 +151,59 @@ napkin outline --file "note" --format md    # Markdown list
 napkin outline --file "note" --format json  # JSON array
 ```
 
-### Templates
+### Templates — `napkin template`
 
 ```bash
-napkin templates                            # List templates
-napkin template:read --name "Daily Note"    # Read template content
-napkin template:read --name "Meeting" --resolve --title "Standup"  # Resolve variables
-napkin template:insert --file "note" --name "Template"  # Insert template into file
+napkin template list                        # List templates
+napkin template read --name "Daily Note"    # Read template content
+napkin template read --name "Meeting" --resolve --title "Standup"  # Resolve variables
+napkin template insert --file "note" --name "Template"  # Insert template into file
 ```
 
-### Aliases
+### Bookmarks — `napkin bookmark`
 
 ```bash
-napkin aliases                              # List all aliases in vault
-napkin aliases --file "note"                # Aliases for a file
-napkin aliases --total                      # Count aliases
-napkin aliases --verbose                    # Include file paths
+napkin bookmark list                        # List bookmarks
+napkin bookmark list --total                # Count bookmarks
+napkin bookmark add --file "note"           # Bookmark a file
+napkin bookmark add --folder "Projects"     # Bookmark a folder
+napkin bookmark add --search "TODO"         # Bookmark a search
+napkin bookmark add --url "https://example.com" --title "Example"
 ```
 
-### Bookmarks
-
-```bash
-napkin bookmarks                            # List bookmarks
-napkin bookmarks --total                    # Count bookmarks
-napkin bookmark --file "note"               # Bookmark a file
-napkin bookmark --folder "Projects"         # Bookmark a folder
-napkin bookmark --search "TODO"             # Bookmark a search
-napkin bookmark --url "https://example.com" --title "Example"
-```
-
-### Bases
+### Bases — `napkin base`
 
 Query vault files using Obsidian Bases `.base` files (YAML-defined filters over frontmatter properties, powered by SQLite in-memory).
 
 ```bash
-napkin bases                                # List .base files
-napkin base:views --file "projects"         # List views in a base
-napkin base:query --file "projects"         # Query default view
-napkin base:query --file "projects" --view "Active"  # Query named view
-napkin base:query --file "projects" --format paths   # Just file paths
-napkin base:query --file "projects" --format csv     # CSV output
-napkin base:create --file "projects" --name "New Item"  # Create item in base
+napkin base list                            # List .base files
+napkin base views --file "projects"         # List views in a base
+napkin base query --file "projects"         # Query default view
+napkin base query --file "projects" --view "Active"  # Query named view
+napkin base query --file "projects" --format paths   # Just file paths
+napkin base query --file "projects" --format csv     # CSV output
+napkin base create --file "projects" --name "New Item"  # Create item in base
 ```
 
-### Canvas
+### Canvas — `napkin canvas`
 
 Read and write JSON Canvas files (`.canvas`) — nodes, edges, groups.
 
 ```bash
-napkin canvases                             # List .canvas files
-napkin canvases --total                     # Count canvases
-napkin canvas:read --file "Board"           # Dump canvas (nodes + edges)
-napkin canvas:nodes --file "Board"          # List all nodes
-napkin canvas:nodes --file "Board" --type text  # Filter by type
-napkin canvas:create --file "Board"         # Create empty canvas
-napkin canvas:create --file "Board" --path "Projects"
-napkin canvas:add-node --file "Board" --type text --text "# Hello"
-napkin canvas:add-node --file "Board" --type file --note-file "Notes/note.md"
-napkin canvas:add-node --file "Board" --type link --url "https://example.com"
-napkin canvas:add-node --file "Board" --type group --label "My Group"
-napkin canvas:add-node --file "Board" --type text --text "Positioned" --x 100 --y 200
-napkin canvas:add-edge --file "Board" --from abc1 --to def2 --label "relates to"
-napkin canvas:remove-node --file "Board" --id abc1  # Removes node + connected edges
+napkin canvas list                          # List .canvas files
+napkin canvas list --total                  # Count canvases
+napkin canvas read --file "Board"           # Dump canvas (nodes + edges)
+napkin canvas nodes --file "Board"          # List all nodes
+napkin canvas nodes --file "Board" --type text  # Filter by type
+napkin canvas create --file "Board"         # Create empty canvas
+napkin canvas create --file "Board" --path "Projects"
+napkin canvas add-node --file "Board" --type text --text "# Hello"
+napkin canvas add-node --file "Board" --type file --note-file "Notes/note.md"
+napkin canvas add-node --file "Board" --type link --url "https://example.com"
+napkin canvas add-node --file "Board" --type group --label "My Group"
+napkin canvas add-node --file "Board" --type text --text "Positioned" --x 100 --y 200
+napkin canvas add-edge --file "Board" --from abc1 --to def2 --label "relates to"
+napkin canvas remove-node --file "Board" --id abc1  # Removes node + connected edges
 ```
 
 Node IDs are 16-char hex. `--from`/`--to`/`--id` accept ID prefixes for convenience.
@@ -234,13 +229,13 @@ napkin onboard                              # Print instructions for CLAUDE.md/A
 Every command supports `--json`. Always use `--json` for programmatic access:
 
 ```bash
-napkin tasks --todo --json
+napkin task list --todo --json
 # {"tasks": [{"text": "Buy groceries", "done": false, "file": "Daily/2024-01-15.md", "line": 5}, ...]}
 
-napkin search --query "deploy" --json
+napkin search "deploy" --json
 # {"files": ["Projects/Deploy Guide.md", "Notes/CI-CD.md"]}
 
-napkin property:read --file "note" --name status --json
+napkin property read --file "note" --name status --json
 # {"value": "done"}
 ```
 
@@ -249,25 +244,25 @@ napkin property:read --file "note" --name status --json
 ### Morning standup prep
 
 ```bash
-napkin daily:read --json                    # What did I write yesterday?
-napkin tasks --todo --json                  # What's pending?
-napkin search --query "blocker" --json      # Any blockers?
+napkin daily read --json                    # What did I write yesterday?
+napkin task list --todo --json              # What's pending?
+napkin search "blocker" --json              # Any blockers?
 ```
 
 ### Project overview
 
 ```bash
-napkin files --folder Projects --json       # List project files
-napkin tags --counts --json                 # Tag distribution
-napkin orphans --json                       # Forgotten files
-napkin unresolved --json                    # Broken links to fix
+napkin file list --folder Projects --json   # List project files
+napkin tag list --counts --json             # Tag distribution
+napkin link orphans --json                  # Forgotten files
+napkin link unresolved --json               # Broken links to fix
 ```
 
 ### Note management
 
 ```bash
 napkin create --name "Meeting Notes" --template "Meeting Note" --path "Meetings"
-napkin property:set --file "Meeting Notes" --name attendees --value "Alice, Bob"
+napkin property set --file "Meeting Notes" --name attendees --value "Alice, Bob"
 napkin append --file "Meeting Notes" --content "- [ ] Follow up on deployment"
 ```
 
