@@ -41,6 +41,7 @@ import {
 } from "./commands/links.js";
 import { onboard } from "./commands/onboard.js";
 import { outline } from "./commands/outline.js";
+import { overview } from "./commands/overview.js";
 import {
   properties,
   propertyRead,
@@ -224,6 +225,16 @@ program
   .action(async (_opts, cmd) => {
     const root = cmd.optsWithGlobals();
     await onboard(root);
+  });
+
+program
+  .command("overview")
+  .description("Generate vault overview (Level 1 progressive disclosure)")
+  .option("--depth <n>", "Max folder depth (default: 3)")
+  .option("--keywords <n>", "Max keywords per folder (default: 8)")
+  .action(async (opts, cmd) => {
+    const root = { ...cmd.optsWithGlobals(), ...opts };
+    await overview(root);
   });
 
 // ── file ────────────────────────────────────────────────────────────
