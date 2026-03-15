@@ -374,6 +374,12 @@ export async function overview(
         }
         console.log(`  ${dim("notes:")} ${f.notes}`);
       }
+      console.log("");
+      console.log(
+        dim(
+          "HINT: Use napkin search <query> to find specific content. Use napkin read <file> to open a file.",
+        ),
+      );
     },
   });
 }

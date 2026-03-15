@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTempVault } from "../utils/test-helpers.js";
-import { search, searchContext } from "./search.js";
+import { search } from "./search.js";
 
 let v: { path: string; cleanup: () => void };
 
@@ -19,7 +19,7 @@ beforeEach(() => {
   v = createTempVault({
     "Projects/alpha.md": "# Alpha\nThis is the alpha project\nWith TODO items",
     "Projects/beta.md": "# Beta\nBeta has no tasks",
-    "Resources/guide.md": "# Guide\nRefer to the alpha project here",
+    "Resources/guide.md": "# Guide\nRefer to the [[alpha]] project here",
     "README.md": "# Vault\nWelcome to the vault",
   });
 });
@@ -29,23 +29,65 @@ afterEach(() => {
 });
 
 describe("search", () => {
-  test("finds files matching query", async () => {
+  test("finds files matching query with scores", async () => {
     const data = await captureJson(() =>
       search({ json: true, vault: v.path, query: "alpha" }),
     );
-    const files = data.files as string[];
+    const results = data.results as { file: string; score?: number }[];
+    const files = results.map((r) => r.file);
     expect(files).toContain("Projects/alpha.md");
     expect(files).toContain("Resources/guide.md");
-    expect(files.length).toBe(2);
+    // Score hidden by default
+    expect(results[0].score).toBeUndefined();
+
+    // Score shown with --score flag
+    const withScore = await captureJson(() =>
+      search({ json: true, vault: v.path, query: "alpha", score: true }),
+    );
+    const scored = withScore.results as { score: number }[];
+    expect(scored[0].score).toBeGreaterThan(0);
+  });
+
+  test("results include snippets by default", async () => {
+    const data = await captureJson(() =>
+      search({ json: true, vault: v.path, query: "TODO" }),
+    );
+    const results = data.results as {
+      file: string;
+      snippets: { line: number; text: string }[];
+    }[];
+    expect(results.length).toBeGreaterThan(0);
+    const alpha = results.find((r) => r.file === "Projects/alpha.md");
+    expect(alpha).toBeDefined();
+    expect(alpha!.snippets.length).toBeGreaterThan(0);
+    expect(alpha!.snippets.some((s) => s.text.includes("TODO"))).toBeTrue();
+  });
+
+  test("no-snippets returns files only", async () => {
+    const data = await captureJson(() =>
+      search({
+        json: true,
+        vault: v.path,
+        query: "alpha",
+        snippets: false,
+      }),
+    );
+    const results = data.results as { file: string; snippets?: unknown }[];
+    expect(results[0].snippets).toBeUndefined();
   });
 
   test("filters by folder", async () => {
     const data = await captureJson(() =>
-      search({ json: true, vault: v.path, query: "alpha", path: "Projects" }),
+      search({
+        json: true,
+        vault: v.path,
+        query: "alpha",
+        path: "Projects",
+      }),
     );
-    const files = data.files as string[];
-    expect(files.length).toBe(1);
-    expect(files[0]).toBe("Projects/alpha.md");
+    const results = data.results as { file: string }[];
+    expect(results.length).toBe(1);
+    expect(results[0].file).toBe("Projects/alpha.md");
   });
 
   test("returns total", async () => {
@@ -55,37 +97,30 @@ describe("search", () => {
     expect(data.total).toBe(2);
   });
 
-  test("case sensitive search", async () => {
-    const data = await captureJson(() =>
-      search({ json: true, vault: v.path, query: "Alpha", case: true }),
-    );
-    const files = data.files as string[];
-    // Only alpha.md has "Alpha" with capital A
-    expect(files).toContain("Projects/alpha.md");
-  });
-
   test("limits results", async () => {
     const data = await captureJson(() =>
       search({ json: true, vault: v.path, query: "the", limit: "1" }),
     );
-    const files = data.files as string[];
-    expect(files.length).toBe(1);
-  });
-});
-
-describe("searchContext", () => {
-  test("returns line context", async () => {
-    const data = await captureJson(() =>
-      searchContext({ json: true, vault: v.path, query: "TODO" }),
-    );
-    const results = data.results as {
-      file: string;
-      line: number;
-      text: string;
-    }[];
+    const results = data.results as { file: string }[];
     expect(results.length).toBe(1);
-    expect(results[0].file).toBe("Projects/alpha.md");
-    expect(results[0].text).toContain("TODO");
-    expect(results[0].line).toBe(3);
+  });
+
+  test("results include backlink count", async () => {
+    const data = await captureJson(() =>
+      search({ json: true, vault: v.path, query: "alpha" }),
+    );
+    const results = data.results as { file: string; links: number }[];
+    const alpha = results.find((r) => r.file === "Projects/alpha.md");
+    expect(alpha).toBeDefined();
+    // guide.md links to [[alpha]], so alpha should have links >= 1
+    expect(alpha!.links).toBeGreaterThanOrEqual(1);
+  });
+
+  test("results include modified time", async () => {
+    const data = await captureJson(() =>
+      search({ json: true, vault: v.path, query: "alpha" }),
+    );
+    const results = data.results as { file: string; modified: string }[];
+    expect(results[0].modified).toMatch(/ago$/);
   });
 });

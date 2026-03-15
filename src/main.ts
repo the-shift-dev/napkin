@@ -48,7 +48,7 @@ import {
   propertyRemove,
   propertySet,
 } from "./commands/properties.js";
-import { search, searchContext } from "./commands/search.js";
+import { search } from "./commands/search.js";
 import { tag, tags } from "./commands/tags.js";
 import { task, tasks } from "./commands/tasks.js";
 import {
@@ -179,22 +179,20 @@ program
 
 program
   .command("search [query...]")
-  .description("Search vault")
+  .description("Search vault (ranked by BM25 + backlinks + recency)")
   .option("--query <text>", "Search query")
   .option("--path <folder>", "Limit to folder")
-  .option("--limit <n>", "Max files")
+  .option("--limit <n>", "Max results (default: 30)")
   .option("--total", "Return match count")
-  .option("--context", "Include line context")
+  .option("--snippet-lines <n>", "Context lines around matches (default: 1)")
+  .option("--no-snippets", "Return files only, no snippets")
+  .option("--score", "Include relevance score in output")
   .action(async (queryWords, opts, cmd) => {
     const root = { ...cmd.optsWithGlobals(), ...opts };
     if (queryWords.length && !root.query) {
       root.query = queryWords.join(" ");
     }
-    if (root.context) {
-      await searchContext(root);
-    } else {
-      await search(root);
-    }
+    await search(root);
   });
 
 program
